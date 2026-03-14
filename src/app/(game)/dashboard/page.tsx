@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LifeStatsPanel } from '@/components/stats/life-stats-panel';
 import { AvatarPreview } from '@/components/avatar/avatar-preview';
 import { modules } from '@/data/seed/modules';
-import { lessons } from '@/data/seed/lessons';
+import { lessonService } from '@/services/lesson-service';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useLifeStats } from '@/hooks/useLifeStats';
 import { useAvatar } from '@/hooks/useAvatar';
@@ -17,8 +17,21 @@ export default function DashboardPage() {
   const [stats] = useLifeStats();
   const [avatar] = useAvatar();
   const module = modules[0];
-  const progressPercent = Math.round((progress.completedLessons.length / module.lessonIds.length) * 100);
-  const nextUnlocked = progress.unlockedLessons.includes('lesson-2-placeholder');
+  const progressPercent = module.lessonIds.length > 0
+    ? Math.round((progress.completedLessons.length / module.lessonIds.length) * 100)
+    : 0;
+
+  // Derive current lesson: first unlocked lesson not yet completed, or last completed
+  const currentLessonId = progress.unlockedLessons.find(
+    (id) => !progress.completedLessons.includes(id)
+  ) ?? progress.unlockedLessons[progress.unlockedLessons.length - 1];
+  const currentLesson = currentLessonId ? lessonService.getById(currentLessonId) : undefined;
+
+  // Derive next lesson from module order
+  const currentIndex = currentLessonId ? module.lessonIds.indexOf(currentLessonId) : -1;
+  const nextLessonId = currentIndex >= 0 ? module.lessonIds[currentIndex + 1] : undefined;
+  const nextLesson = nextLessonId ? lessonService.getById(nextLessonId) : undefined;
+  const nextUnlocked = nextLessonId ? progress.unlockedLessons.includes(nextLessonId) : false;
 
   return (
     <MobileShell>
@@ -38,20 +51,31 @@ export default function DashboardPage() {
 
         <LifeStatsPanel stats={stats} />
 
-        <Card>
-          <p className="text-xs uppercase text-slate-500">Current lesson</p>
-          <p className="font-semibold">{lessons[0].title}</p>
-        </Card>
+        {currentLesson && (
+          <Card>
+            <p className="text-xs uppercase text-slate-500">Current lesson</p>
+            <p className="font-semibold">{currentLesson.title}</p>
+          </Card>
+        )}
 
-        <Card>
-          <p className="text-xs uppercase text-slate-500">Next lesson</p>
-          <p className="font-semibold">Communication Warm-Ups</p>
-          <p className="text-sm text-slate-700">{nextUnlocked ? 'Unlocked ✅ (placeholder ready)' : 'Locked 🔒 complete lesson 1 scenario to unlock'}</p>
-        </Card>
+        {nextLesson ? (
+          <Card>
+            <p className="text-xs uppercase text-slate-500">Next lesson</p>
+            <p className="font-semibold">{nextLesson.title}</p>
+            <p className="text-sm text-slate-700">{nextUnlocked ? 'Unlocked ✅' : 'Locked 🔒 complete current scenario to unlock'}</p>
+          </Card>
+        ) : progress.completedLessons.length === module.lessonIds.length && module.lessonIds.length > 0 ? (
+          <Card>
+            <p className="text-xs uppercase text-slate-500">Module complete</p>
+            <p className="font-semibold">All lessons finished 🎉</p>
+          </Card>
+        ) : null}
 
-        <Link href="/lesson/module-1/lesson-1">
-          <Button variant="secondary">Replay lesson 1</Button>
-        </Link>
+        {currentLessonId && (
+          <Link href={`/lesson/${module.id}/${currentLessonId}`}>
+            <Button variant="secondary">Go to current lesson</Button>
+          </Link>
+        )}
       </div>
     </MobileShell>
   );
