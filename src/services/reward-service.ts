@@ -8,7 +8,7 @@ export function createRewardTransaction(
   coins: number
 ): RewardTransaction {
   return {
-    id: `${source}-${sourceId}-${Date.now()}`,
+    id: crypto.randomUUID(),
     userId,
     source,
     sourceId,

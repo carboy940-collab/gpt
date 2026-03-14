@@ -1,33 +1,22 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { AvatarPreview } from '@/components/avatar/avatar-preview';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { storageKeys } from '@/lib/constants/storage-keys';
-import { readFromStorage, writeToStorage } from '@/lib/utils/storage';
 import { Avatar } from '@/types/avatar';
-
-const defaultAvatar: Avatar = {
-  userId: 'demo-user',
-  skinTone: 'medium',
-  hairStyle: 'short',
-  outfit: 'hoodie',
-  accessory: 'none'
-};
+import { useAvatar } from '@/hooks/useAvatar';
 
 export default function AvatarPage() {
   const router = useRouter();
-  const [avatar, setAvatar] = useState<Avatar>(() => readFromStorage(storageKeys.avatar, defaultAvatar));
+  const [avatar, setAvatar] = useAvatar();
 
   const updateAvatar = <K extends keyof Avatar>(key: K, value: Avatar[K]) => {
-    setAvatar((prev) => ({ ...prev, [key]: value }));
+    setAvatar({ ...avatar, [key]: value });
   };
 
   const continueFlow = () => {
-    writeToStorage(storageKeys.avatar, avatar);
     router.push('/lesson/module-1/lesson-1');
   };
 

@@ -2,7 +2,7 @@ import { Progress } from '@/types/progress';
 import { LifeStats, LifeStatsDelta } from '@/types/stats';
 
 export const baseProgress: Progress = {
-  userId: 'demo-user',
+  userId: '00000000-0000-4000-8000-000000000001',
   completedLessons: [],
   completedScenarios: [],
   unlockedLessons: ['lesson-1'],

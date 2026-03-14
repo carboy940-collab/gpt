@@ -1,85 +1,23 @@
 # Now What? — Phase 1 Vertical Slice
 
-## 1) Short architecture plan
-- **App shell + route groups**: marketing, auth, and game areas separated in App Router.
-- **Data-driven content**: modules, lessons, and scenarios come from seed data files.
-- **Service layer**: lesson/scenario lookup, progression updates, and rewards are encapsulated in `/services`.
-- **Typed domain model**: dedicated TypeScript interfaces in `/types` for future scale.
-- **Persistence abstraction**: local storage for Phase 1 demo mode with Supabase-ready client + schema.
-- **Reusable UI**: scenario engine, lesson renderer, life stats panel, and avatar preview as components.
+## Architecture snapshot (refactored)
+- **Routes/pages are thin** and focused on loading + wiring UI.
+- **Application orchestration** for scenario completion lives in `src/services/scenario-completion-service.ts`.
+- **Persistence is abstracted** behind `AppRepository` (`src/lib/persistence/contracts.ts`).
+- **Current mode uses local storage adapter** (`LocalAppRepository`), with a Phase 1 Supabase repository stub for future swap-in.
+- **Seed content remains data-driven** in `src/data/seed/*`.
 
-## 2) Folder structure
-```text
-/src
-  /app
-    /(marketing)/page.tsx
-    /(auth)/sign-in/page.tsx
-    /(auth)/sign-up/page.tsx
-    /(game)/avatar/page.tsx
-    /(game)/dashboard/page.tsx
-    /(game)/lesson/[moduleId]/[lessonId]/page.tsx
-    /(game)/scenario/[scenarioId]/page.tsx
-    /(game)/feedback/page.tsx
-    /layout.tsx
-    /globals.css
-  /components
-    /ui
-    /layout
-    /avatar
-    /lessons
-    /scenarios
-    /stats
-    /rewards
-  /features
-    /auth
-  /lib
-    /supabase
-    /utils
-    /constants
-    /validators
-  /services
-  /data/seed
-  /types
-  /hooks
-/supabase/schema.sql
-```
+## Key flow
+1. Demo session initialized in sign-in via repository.
+2. Avatar and progress/stat reads/writes go through repository-backed hooks.
+3. Scenario page calls `completeScenario(...)` (single orchestration entry).
+4. Feedback/dashboard read persisted state from repository-backed hooks.
 
-## 3) Typed data model outline
-- `User`, `UserProfile`
-- `Avatar`
-- `Module`, `Lesson`
-- `Scenario`, `ScenarioChoice`
-- `Progress`
-- `LifeStats`, `LifeStatsDelta`
-- `RewardTransaction`
-
-See: `/src/types/*`
-
-## 4) Supabase schema outline
-See SQL in `/supabase/schema.sql` for:
-- `profiles`
-- `avatars`
-- `modules`
-- `lessons`
-- `scenarios`
-- `user_progress`
-- `user_stats`
-- `user_rewards`
-
-## 5) Implementation sequence used
-1. Scaffolded Next.js/Tailwind/TS structure.
-2. Added typed models and seed content for module 1 + lesson 1 + scenario 1.
-3. Built services for lesson/scenario/reward/progression logic.
-4. Added local persistence hooks + Supabase client scaffold.
-5. Implemented onboarding flow (welcome → demo entry → avatar → lesson → scenario → feedback → dashboard).
-6. Added dashboard progression, XP/coins rewards, life stats updates, and next lesson placeholder unlock state.
+## Supabase schema
+See `supabase/schema.sql` for Phase 1 tables and UUID-compatible rewards (`user_rewards.id`).
 
 ## Run locally
 ```bash
 npm install
 npm run dev
 ```
-
-## Notes
-- In constrained environments without npm registry access, install may fail.
-- Phase 1 uses demo mode + local persistence while remaining Supabase-ready.

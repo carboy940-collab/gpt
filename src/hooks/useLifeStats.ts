@@ -1,9 +1,22 @@
 'use client';
 
-import { useLocalPersistedState } from './use-local-persisted-state';
-import { storageKeys } from '@/lib/constants/storage-keys';
+import { useEffect, useState } from 'react';
+import { LifeStats } from '@/types/stats';
 import { baseStats } from '@/services/progress-service';
+import { useAppRepository } from './useAppRepository';
 
 export function useLifeStats() {
-  return useLocalPersistedState(storageKeys.stats, baseStats);
+  const repository = useAppRepository();
+  const [stats, setStatsState] = useState<LifeStats>(baseStats);
+
+  useEffect(() => {
+    setStatsState(repository.getStats());
+  }, [repository]);
+
+  const setStats = (next: LifeStats) => {
+    setStatsState(next);
+    repository.saveStats(next);
+  };
+
+  return [stats, setStats] as const;
 }

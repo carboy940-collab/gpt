@@ -1,24 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { ScenarioEngine } from '@/components/scenarios/scenario-engine';
-import { useUserProgress } from '@/hooks/useUserProgress';
-import { useLifeStats } from '@/hooks/useLifeStats';
-import { useRewards } from '@/hooks/useRewards';
 import { scenarioService } from '@/services/scenario-service';
-import { applyScenarioResult } from '@/services/progress-service';
-import { createRewardTransaction } from '@/services/reward-service';
 import { Card } from '@/components/ui/card';
-import { storageKeys } from '@/lib/constants/storage-keys';
-import { writeToStorage } from '@/lib/utils/storage';
+import { completeScenario } from '@/services/scenario-completion-service';
+import { getAppRepository } from '@/lib/persistence';
 
 export default function ScenarioPage({ params }: { params: { scenarioId: string } }) {
   const scenario = scenarioService.getById(params.scenarioId);
-  const [progress, setProgress] = useUserProgress();
-  const [stats, setStats] = useLifeStats();
-  const [rewards, setRewards] = useRewards();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   if (!scenario) {
     return (
@@ -30,32 +24,33 @@ export default function ScenarioPage({ params }: { params: { scenarioId: string 
 
   return (
     <MobileShell>
-      <ScenarioEngine
-        prompt={scenario.prompt}
-        choices={scenario.choices}
-        onComplete={(choice) => {
-          const next = applyScenarioResult(progress, stats, {
-            lessonId: scenario.lessonId,
-            scenarioId: scenario.id,
-            xp: choice.xpReward,
-            coins: choice.coinReward,
-            statChanges: choice.statChanges,
-            unlockLessonId: 'lesson-2-placeholder'
-          });
+      <div className="space-y-4">
+        {error ? <Card>{error}</Card> : null}
+        <ScenarioEngine
+          prompt={scenario.prompt}
+          choices={scenario.choices}
+          onComplete={(choice) => {
+            const repository = getAppRepository();
+            const session = repository.getSession();
 
-          setProgress(next.progress);
-          setStats(next.stats);
+            if (!session.currentUser) {
+              router.push('/sign-in');
+              return;
+            }
 
-          const transaction = createRewardTransaction('demo-user', 'scenario', scenario.id, choice.xpReward, choice.coinReward);
-          setRewards([...rewards, transaction]);
-
-          writeToStorage(storageKeys.lastResult, {
-            choice,
-            prompt: scenario.prompt
-          });
-          router.push('/feedback');
-        }}
-      />
+            try {
+              completeScenario(repository, {
+                userId: session.currentUser.id,
+                scenarioId: scenario.id,
+                choiceId: choice.id
+              });
+              router.push('/feedback');
+            } catch {
+              setError('Could not save scenario result. Please try again.');
+            }
+          }}
+        />
+      </div>
     </MobileShell>
   );
 }

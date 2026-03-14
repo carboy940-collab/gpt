@@ -1,5 +1,5 @@
 export const storageKeys = {
-  user: 'nw-user',
+  session: 'nw-session',
   profile: 'nw-profile',
   avatar: 'nw-avatar',
   progress: 'nw-progress',

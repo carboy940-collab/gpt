@@ -1,16 +1,17 @@
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 import { User, UserProfile } from '@/types/user';
 
 export function createDemoUser(): User {
   return {
-    id: 'demo-user',
+    id: DEMO_USER_ID,
     mode: 'demo',
     createdAt: new Date().toISOString()
   };
 }
 
-export function createBaseProfile(): UserProfile {
+export function createBaseProfile(userId: string): UserProfile {
   return {
-    userId: 'demo-user',
+    userId,
     displayName: 'Player One',
     gradeLevel: '9',
     onboardingComplete: false,

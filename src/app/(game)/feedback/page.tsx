@@ -5,17 +5,10 @@ import { MobileShell } from '@/components/layout/mobile-shell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RewardToast } from '@/components/rewards/reward-toast';
-import { readFromStorage } from '@/lib/utils/storage';
-import { storageKeys } from '@/lib/constants/storage-keys';
-import { ScenarioChoice } from '@/types/scenario';
-
-interface LastResult {
-  prompt: string;
-  choice: ScenarioChoice;
-}
+import { useLastScenarioResult } from '@/hooks/useLastScenarioResult';
 
 export default function FeedbackPage() {
-  const result = readFromStorage<LastResult | null>(storageKeys.lastResult, null);
+  const result = useLastScenarioResult();
 
   if (!result) {
     return (

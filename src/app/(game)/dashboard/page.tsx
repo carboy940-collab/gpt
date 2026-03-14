@@ -10,22 +10,12 @@ import { modules } from '@/data/seed/modules';
 import { lessons } from '@/data/seed/lessons';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useLifeStats } from '@/hooks/useLifeStats';
-import { readFromStorage } from '@/lib/utils/storage';
-import { storageKeys } from '@/lib/constants/storage-keys';
-import { Avatar } from '@/types/avatar';
-
-const fallbackAvatar: Avatar = {
-  userId: 'demo-user',
-  skinTone: 'medium',
-  hairStyle: 'short',
-  outfit: 'hoodie',
-  accessory: 'none'
-};
+import { useAvatar } from '@/hooks/useAvatar';
 
 export default function DashboardPage() {
   const [progress] = useUserProgress();
   const [stats] = useLifeStats();
-  const avatar = readFromStorage(storageKeys.avatar, fallbackAvatar);
+  const [avatar] = useAvatar();
   const module = modules[0];
   const progressPercent = Math.round((progress.completedLessons.length / module.lessonIds.length) * 100);
   const nextUnlocked = progress.unlockedLessons.includes('lesson-2-placeholder');

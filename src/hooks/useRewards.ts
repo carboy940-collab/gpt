@@ -1,9 +1,21 @@
 'use client';
 
-import { useLocalPersistedState } from './use-local-persisted-state';
-import { storageKeys } from '@/lib/constants/storage-keys';
+import { useEffect, useState } from 'react';
 import { RewardTransaction } from '@/types/reward';
+import { useAppRepository } from './useAppRepository';
 
 export function useRewards() {
-  return useLocalPersistedState<RewardTransaction[]>(storageKeys.rewards, []);
+  const repository = useAppRepository();
+  const [rewards, setRewards] = useState<RewardTransaction[]>([]);
+
+  useEffect(() => {
+    setRewards(repository.getRewards());
+  }, [repository]);
+
+  const appendReward = (reward: RewardTransaction) => {
+    repository.appendReward(reward);
+    setRewards(repository.getRewards());
+  };
+
+  return [rewards, appendReward] as const;
 }

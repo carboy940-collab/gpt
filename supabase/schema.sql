@@ -1,5 +1,5 @@
 create table if not exists profiles (
-  user_id uuid primary key,
+  user_id uuid primary key default gen_random_uuid(),
   display_name text not null,
   grade_level text not null,
   onboarding_complete boolean not null default false,
@@ -61,7 +61,7 @@ create table if not exists user_stats (
 );
 
 create table if not exists user_rewards (
-  id uuid primary key,
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(user_id) on delete cascade,
   source text not null,
   source_id text not null,
