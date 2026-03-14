@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { ScenarioEngine } from '@/components/scenarios/scenario-engine';
@@ -9,8 +9,9 @@ import { Card } from '@/components/ui/card';
 import { completeScenario } from '@/services/scenario-completion-service';
 import { getAppRepository } from '@/lib/persistence';
 
-export default function ScenarioPage({ params }: { params: { scenarioId: string } }) {
-  const scenario = scenarioService.getById(params.scenarioId);
+export default function ScenarioPage({ params }: { params: Promise<{ scenarioId: string }> }) {
+  const { scenarioId } = use(params);
+  const scenario = scenarioService.getById(scenarioId);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
