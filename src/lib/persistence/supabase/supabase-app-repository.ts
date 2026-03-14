@@ -29,6 +29,7 @@ export class SupabaseAppRepository implements AppRepository {
   saveStats(_stats: LifeStats): void { this.notImplemented(); }
 
   getRewards(): RewardTransaction[] { return this.notImplemented(); }
+  saveRewards(_rewards: RewardTransaction[]): void { this.notImplemented(); }
   appendReward(_reward: RewardTransaction): void { this.notImplemented(); }
 
   getLastScenarioResult(): ScenarioResult | null { return this.notImplemented(); }

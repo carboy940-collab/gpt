@@ -13,6 +13,7 @@ export default function ScenarioPage({ params }: { params: { scenarioId: string 
   const scenario = scenarioService.getById(params.scenarioId);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!scenario) {
     return (
@@ -26,10 +27,13 @@ export default function ScenarioPage({ params }: { params: { scenarioId: string 
     <MobileShell>
       <div className="space-y-4">
         {error ? <Card>{error}</Card> : null}
+        {isSubmitting ? <Card>Saving your choice...</Card> : null}
         <ScenarioEngine
           prompt={scenario.prompt}
           choices={scenario.choices}
           onComplete={(choice) => {
+            if (isSubmitting) return;
+
             const repository = getAppRepository();
             const session = repository.getSession();
 
@@ -39,14 +43,19 @@ export default function ScenarioPage({ params }: { params: { scenarioId: string 
             }
 
             try {
+              setIsSubmitting(true);
+              setError(null);
+
               completeScenario(repository, {
                 userId: session.currentUser.id,
                 scenarioId: scenario.id,
                 choiceId: choice.id
               });
+
               router.push('/feedback');
             } catch {
               setError('Could not save scenario result. Please try again.');
+              setIsSubmitting(false);
             }
           }}
         />

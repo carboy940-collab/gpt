@@ -29,7 +29,7 @@ export class LocalAppRepository implements AppRepository {
     this.saveAvatar(avatar);
     this.saveProgress(progress);
     this.saveStats(stats);
-    writeToStorage(storageKeys.rewards, [] as RewardTransaction[]);
+    this.saveRewards([]);
   }
 
   getProfile(): UserProfile | null {
@@ -68,9 +68,12 @@ export class LocalAppRepository implements AppRepository {
     return readFromStorage<RewardTransaction[]>(storageKeys.rewards, []);
   }
 
+  saveRewards(rewards: RewardTransaction[]): void {
+    writeToStorage(storageKeys.rewards, rewards);
+  }
+
   appendReward(reward: RewardTransaction): void {
-    const rewards = this.getRewards();
-    writeToStorage(storageKeys.rewards, [...rewards, reward]);
+    this.saveRewards([...this.getRewards(), reward]);
   }
 
   getLastScenarioResult(): ScenarioResult | null {

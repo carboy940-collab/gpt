@@ -24,6 +24,7 @@ export interface AppRepository {
   saveStats(stats: LifeStats): void;
 
   getRewards(): RewardTransaction[];
+  saveRewards(rewards: RewardTransaction[]): void;
   appendReward(reward: RewardTransaction): void;
 
   getLastScenarioResult(): ScenarioResult | null;

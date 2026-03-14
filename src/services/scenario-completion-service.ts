@@ -1,4 +1,5 @@
 import { AppRepository } from '@/lib/persistence/contracts';
+import { lessonService } from '@/services/lesson-service';
 import { createRewardTransaction } from '@/services/reward-service';
 import { scenarioService } from '@/services/scenario-service';
 import { applyScenarioResult } from '@/services/progress-service';
@@ -32,6 +33,7 @@ export function completeScenario(
 
   const progress = repository.getProgress();
   const stats = repository.getStats();
+  const nextLessonId = lessonService.getNextLessonId(scenario.lessonId);
 
   const next = applyScenarioResult(progress, stats, {
     lessonId: scenario.lessonId,
@@ -39,7 +41,7 @@ export function completeScenario(
     xp: selectedChoice.xpReward,
     coins: selectedChoice.coinReward,
     statChanges: selectedChoice.statChanges,
-    unlockLessonId: input.scenarioId === 'scenario-1' ? 'lesson-2-placeholder' : undefined
+    unlockLessonId: nextLessonId
   });
 
   repository.saveProgress(next.progress);
